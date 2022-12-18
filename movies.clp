@@ -1,0 +1,5 @@
+(defrule start (and (not (exists (pytanie ? $?))) (not (exists (odpowiedz ?)))) => (assert (pytanie "Classic or modern?" "I need an escape from Tinder" "I'm a modern girl.")))
+(defrule need-an-escape ?id <- (odpowiedz "I need an escape from Tinder") => (retract ?id) (assert (pytanie "Black and white?" "Definitely, love oldies!" "Lets go more modern.")))
+(defrule answer-ex1 ?id <- (odpowiedz "Definitely, love oldies!") => (retract ?id) (assert (wynik "Wynik 1")))
+(defrule answer-ex2 ?id <- (odpowiedz "Lets go more modern.") => (retract ?id) (assert (wynik "Wynik 2")))
+(defrule answer-ex3 ?id <- (odpowiedz "I'm a modern girl.") => (retract ?id) (assert (wynik "Wynik 3")))
