@@ -17,15 +17,152 @@ class ExpertSystem:
     def set_answer(self, answer_string):
         self.env.assert_string("(odpowiedz \"" + answer_string + "\")")
 
+    def go_to_answer(self, answer_string):
+        for fact in self.get_facts():
+            fact.retract()
+
+        if answer_string != "":
+            self.set_answer(answer_string)
+
     def run(self):
         self.env.run()
 
 
 class App(customtkinter.CTk):
+    question_label = None
+    answers = None
+    next_button = None
+    previous_button = None
+
+    checkboxes = []
+
+    question_string = ""
+    answers_list = []
+
+    answers_history = []
+
+    finished = False
+
+    def setup_controls(self):
+        self.load_answers_box()
+        self.load_next_button()
+        self.load_previous_button()
+
+    def __init__(self):
+        super().__init__()
+
+        self.title("Perfect romance movie")
+        self.iconbitmap("./icon.ico")
+
+        self.minsize(800, 300)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure((0, 1, 2), weight=1)
+
+        self.env = ExpertSystem()
+        self.selected_checkbox = tkinter.IntVar()
+
+        self.setup_controls()
+
+        self.load_expert_system_data()
+
+    def load_next_button(self):
+        if self.next_button is None:
+            self.next_button = customtkinter.CTkButton(
+                master=self, command=self.next_button_callback, text="Next")
+            self.next_button.grid(
+                row=3, column=2, padx=20, pady=20, sticky="ew")
+        else:
+            self.next_button.configure(
+                text="Next", command=self.next_button_callback)
+
+    def load_previous_button(self):
+        if self.previous_button is None:
+            self.previous_button = customtkinter.CTkButton(
+                master=self, command=self.previous_button_callback, text="Back")
+            self.previous_button.grid(
+                row=3, column=0, padx=20, pady=20, sticky="ew")
+
+    def load_answers_box(self):
+        if self.answers is None:
+            self.answers = customtkinter.CTkFrame(master=self)
+            self.answers.grid_rowconfigure(0, weight=1)
+            self.answers.grid_columnconfigure(0, weight=1)
+            self.answers.grid(row=1, column=0, columnspan=3,
+                              padx=20, pady=20, sticky="ew")
+            self.answers.configure()
+
+    def checkbox_selected(self):
+        if self.next_button is not None:
+            self.next_button.configure(state="standard")
+
+    def show_answers(self, answers):
+        if self.next_button is None:
+            return
+        self.next_button.configure(state="disabled")
+
+        self.selected_checkbox.set(-1)
+
+        for checkbox in self.checkboxes:
+            checkbox.grid_forget()
+            checkbox.destroy()
+
+        self.checkboxes = []
+
+        for i in range(len(answers)):
+            self.checkboxes.append(
+                customtkinter.CTkRadioButton(master=self.answers, text=answers[i], value=i,
+                                             variable=self.selected_checkbox, command=self.checkbox_selected)
+            )
+            self.checkboxes[-1].grid(row=i, column=0,
+                                     pady=(0, 10), padx=10, sticky="new")
+
+        self.checkboxes[0].grid(pady=10)
+
+    def close_button_callback(self):
+        self.quit()
+
+    def previous_button_callback(self):
+        question = self.answers_history[-2] if len(
+            self.answers_history) > 1 else ""
+
+        self.answers_history.pop()
+
+        if self.finished:
+            self.finished = False
+            self.setup_controls()
+
+        self.env.go_to_answer(question)
+
+        self.load_expert_system_data()
+
+    def next_button_callback(self):
+        answer = self.answers_list[self.selected_checkbox.get()]
+        self.answers_history.append(answer)
+        self.env.set_answer(answer)
+
+        self.load_expert_system_data()
+
+    def finish(self, result):
+        self.next_button.configure(
+            text="Exit", command=self.close_button_callback)
+
+        for checkbox in self.checkboxes:
+            checkbox.grid_forget()
+            checkbox.destroy()
+
+        self.checkboxes = []
+        self.answers.grid_forget()
+        self.answers.destroy()
+        self.answers = None
+        self.show_question(result)
+        self.finished = True
+
     def show_question(self, question):
         if self.question_label is None:
-            self.question_label = customtkinter.CTkLabel(master=self, text=question)
-            self.question_label.grid(row=0, column=0, columnspan=3, padx=20, pady=20, sticky="ew")
+            self.question_label = customtkinter.CTkLabel(
+                master=self, text=question)
+            self.question_label.grid(
+                row=0, column=0, columnspan=3, padx=20, pady=20, sticky="ew")
 
         self.question_label.configure(text=question)
 
@@ -43,65 +180,10 @@ class App(customtkinter.CTk):
             if fact.template.name == "wynik":
                 self.finish(fact[0])
 
-    def __init__(self):
-        super().__init__()
-
-        self.title("Perfect romance movie")
-        self.iconbitmap("./icon.ico")
-
-        self.minsize(800, 300)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure((0, 1, 2), weight=1)
-
-        self.env = ExpertSystem()
-
-        self.question_label = None
-        self.question_string = ""
-        self.answers_list = []
-        self.checkboxes = []
-        self.answers = customtkinter.CTkFrame(master=self)
-        self.answers.grid_rowconfigure(0, weight=1)
-        self.answers.grid_columnconfigure(0, weight=1)
-        self.answers.grid(row=1, column=0, columnspan=3, padx=20, pady=20, sticky="ew")
-        self.answers.configure()
-        self.selected_checkbox = tkinter.IntVar()
-
-        self.next_button = customtkinter.CTkButton(master=self, command=self.next_button_callback, text="Next")
-        self.next_button.grid(row=3, column=1, padx=20, pady=20, sticky="ew")
-
-        self.load_expert_system_data()
-
-    def checkbox_selected(self):
-        self.next_button.configure(state="standard")
-
-    def show_answers(self, answers):
-        self.next_button.configure(state="disabled")
-        self.selected_checkbox.set(-1)
-
-        for checkbox in self.checkboxes:
-            checkbox.grid_forget()
-            checkbox.destroy()
-
-        self.checkboxes = []
-
-        for i in range(len(answers)):
-            self.checkboxes.append(
-                customtkinter.CTkRadioButton(master=self.answers, text=answers[i], value=i,
-                                             variable=self.selected_checkbox, command=self.checkbox_selected)
-            )
-            self.checkboxes[-1].grid(row=i, column=0, pady=(0, 10), padx=10, sticky="new")
-
-        self.checkboxes[0].grid(pady=10)
-
-    def next_button_callback(self):
-        self.env.set_answer(self.answers_list[self.selected_checkbox.get()])
-
-        self.load_expert_system_data()
-
-    def finish(self, result):
-        self.next_button.destroy()
-        self.answers.destroy()
-        self.show_question(result)
+        if len(self.answers_history) > 0:
+            self.previous_button.configure(state="standard")
+        else:
+            self.previous_button.configure(state="disabled")
 
 
 if __name__ == "__main__":
