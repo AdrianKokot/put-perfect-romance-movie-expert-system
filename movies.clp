@@ -94,7 +94,7 @@
    =>
    (retract ?pid)
    (retract ?id)
-   (assert (pytanie "Is your life at a crossroads?" "My life is a pretty stable." "When is it not?")))
+   (assert (pytanie "Is your life at a crossroads?" "My life is pretty stable." "When is it not?")))
 
 (defrule please-sey-yes
    ?id <- (odpowiedz "Please say yes!")
@@ -554,7 +554,7 @@
 
 (defrule pretty-stable
    ?id <- (odpowiedz "My life is pretty stable.")
-   ?pid <- (pytanie "Is your life at a crossroads?" "My life is a pretty stable." "When is it not?")
+   ?pid <- (pytanie "Is your life at a crossroads?" "My life is pretty stable." "When is it not?")
    =>
    (retract ?pid)
    (retract ?id)
@@ -562,7 +562,7 @@
 
 (defrule when-is-it-not
    ?id <- (odpowiedz "When is it not?")
-   ?pid <- (pytanie "Is your life at a crossroads?" "My life is a pretty stable." "When is it not?")
+   ?pid <- (pytanie "Is your life at a crossroads?" "My life is pretty stable." "When is it not?")
    =>
    (retract ?pid)
    (retract ?id)
@@ -662,7 +662,7 @@
    =>
    (retract ?pid)
    (retract ?id)
-   (assert (pytanie "Your parents?" "Oh yeah" "In-laws.")))
+   (assert (pytanie "Your parents?" "Oh yeah." "In-laws.")))
 
 (defrule always
    ?id <- (odpowiedz "Always!")
@@ -714,7 +714,7 @@
 
 (defrule oh-yeah
    ?id <- (odpowiedz "Oh yeah.")
-   ?pid <- (pytanie "Your parents?" "Oh yeah" "In-laws.")
+   ?pid <- (pytanie "Your parents?" "Oh yeah." "In-laws.")
    =>
    (retract ?pid)
    (retract ?id)
@@ -722,7 +722,7 @@
 
 (defrule in-laws
    ?id <- (odpowiedz "In-laws.")
-   ?pid <- (pytanie "Your parents?" "Oh yeah" "In-laws.")
+   ?pid <- (pytanie "Your parents?" "Oh yeah." "In-laws.")
    =>
    (retract ?pid)
    (retract ?id)
@@ -809,7 +809,7 @@
    (assert (pytanie "Rich or middle class?" "Show me the Benjamins." "Partial to the average Joe.")))
 
 (defrule happy-endings
-   ?id <- (odpowiedz "Happy Endings!")
+   ?id <- (odpowiedz "Happy endings!")
    ?pid <- (pytanie "Happy endings or college drama?" "Happy endings!" "Drama.")
    =>
    (retract ?pid)
