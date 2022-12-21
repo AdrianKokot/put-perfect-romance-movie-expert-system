@@ -17,12 +17,13 @@ class ExpertSystem:
     def set_answer(self, answer_string):
         self.env.assert_string("(odpowiedz \"" + answer_string + "\")")
 
-    def go_to_answer(self, answer_string):
-        for fact in self.get_facts():
-            fact.retract()
+    def go_to_question(self, fact_string):
+        facts = self.get_facts()
 
-        if answer_string != "":
-            self.set_answer(answer_string)
+        self.env.assert_string(f'(pytanie {fact_string})')
+
+        for fact in facts:
+          fact.retract()
 
     def run(self):
         self.env.run()
@@ -39,7 +40,7 @@ class App(customtkinter.CTk):
     question_string = ""
     answers_list = []
 
-    answers_history = []
+    questions_history = []
 
     finished = False
 
@@ -122,24 +123,23 @@ class App(customtkinter.CTk):
         self.quit()
 
     def previous_button_callback(self):
-        question = self.answers_history[-2] if len(
-            self.answers_history) > 1 else ""
+        question = self.questions_history[-1]
 
-        self.answers_history.pop()
+        self.questions_history.pop()
 
         if self.finished:
             self.finished = False
             self.setup_controls()
 
-        self.env.go_to_answer(question)
+        self.env.go_to_question(question)
 
         self.load_expert_system_data()
 
     def next_button_callback(self):
-        answer = self.answers_list[self.selected_checkbox.get()]
-        self.answers_history.append(answer)
-        self.env.set_answer(answer)
+        answers = ' '.join([f'"{x}"' for x in self.answers_list])
 
+        self.questions_history.append(f'"{self.question_string}" {answers}')
+        self.env.set_answer(self.answers_list[self.selected_checkbox.get()])
         self.load_expert_system_data()
 
     def finish(self, result):
@@ -180,7 +180,7 @@ class App(customtkinter.CTk):
             if fact.template.name == "wynik":
                 self.finish(fact[0])
 
-        if len(self.answers_history) > 0:
+        if len(self.questions_history) > 0:
             self.previous_button.configure(state="standard")
         else:
             self.previous_button.configure(state="disabled")
